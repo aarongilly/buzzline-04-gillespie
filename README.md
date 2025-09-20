@@ -1,3 +1,47 @@
+# NW Missouri State University CSIS 44671 Module 4
+
+Date: 2025-09-19
+Author: Aaron Gillespie
+GitHub: https://github.com/aarongilly
+
+## About 
+
+This assignment introduces streaming data beyond simple text. We will utilize JSON and CSV to simulate streaming Semi-structured & structured (respective) datasets. 
+
+This codebase includes the original reference code and my own producer & consumer (the ones ending with `gillespie.py`) demonstrating a continually updating plot, including a couple of sub-plots that track and display the data from the JSON file relating to it (e.g. the "steps" data will show in the chart about *steps*).  
+
+My code does *not* use Kakfa, therefore **Task 1** from below is not necessary. I'm not scaling this demo, and my imagined use case from this class in my actual life would more likely be from files written intermittently to my own computer rather than having and managing a kafka cluster. 
+
+# Running
+
+Because I'm not using Kafka, running this code only takes 2 terminals - one for the **producer** and then another for the **consumer**.
+
+## 1: Start the Producer
+
+Open a terminal and paste the following:
+
+Mac/Linux:
+
+```zsh
+source .venv/bin/activate
+python3 -m producer.project_producer_gillespie
+```
+
+## 2: Start the Consumer
+
+Open a new terminal and paste the following:
+
+Mac/Linux:
+
+```zsh
+source .venv/bin/activate
+python3 -m consumers.project_consumer_gillespie
+```
+
+Below this horizontal rule is the original README from the assignment, most of which is still relevant.
+
+---
+
 # buzzline-04-case
 
 We can analyze and visualize different types of streaming data as the information arrives.
