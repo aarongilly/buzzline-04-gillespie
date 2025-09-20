@@ -61,100 +61,55 @@ plt.ion()  # Turn on interactive mode for live updates
 def update_chart():
     """Update the live chart with the latest author counts."""
     # Prepare data for each subplot
-    # 1. Stacked bar chart for diet (assume messages have 'diet' dict: {food: count})
-    # 2. Line chart for heart_rate (assume messages have 'heart_rate' field)
-    # 3. Line chart for steps (assume messages have 'steps' field)
-    # 4. Line chart for exercise duration & distance (assume messages have 'exercise': {'duration': x, 'distance': y})
+    # 1. Line chart for heart_rate (assume messages have 'heart_rate' field)
+    # 2. Line chart for steps (assume messages have 'steps' field)
 
     # We'll need to store historical data for line charts
     if not hasattr(update_chart, "history"):
         update_chart.history = {
             "heart_rate": [],
             "steps": [],
-            "exercise_duration": [],
-            "exercise_distance": [],
-            "diet": defaultdict(lambda: defaultdict(int)),  # author -> food -> count
-            "authors": [],
-            "msg_count": 0,
         }
 
     history = update_chart.history
 
     # Update history with latest author_counts
     history["authors"] = list(author_counts.keys())
-    history["msg_count"] += 1
+    # history["msg_count"] += 1
 
     # For demonstration, assume the last processed message is available as a global
     # In real code, you would refactor to pass the latest message data to update_chart
     latest_msg = getattr(update_chart, "latest_msg", {})
     author = latest_msg.get("author", "unknown")
 
-    # Update diet data
-    if "diet" in latest_msg:
-        for food, count in latest_msg["diet"].items():
-            history["diet"][author][food] += count
-
     # Update heart_rate
     if "heart_rate" in latest_msg:
         history["heart_rate"].append(latest_msg["heart_rate"])
-    else:
-        history["heart_rate"].append(None)
+    # else:
+    #     history["heart_rate"].append(None)
 
     # Update steps
     if "steps" in latest_msg:
         history["steps"].append(latest_msg["steps"])
-    else:
-        history["steps"].append(None)
+    # else:
+    #     history["steps"].append(None)
 
-    # Update exercise
-    if "exercise" in latest_msg:
-        history["exercise_duration"].append(latest_msg["exercise"].get("duration", None))
-        history["exercise_distance"].append(latest_msg["exercise"].get("distance", None))
-    else:
-        history["exercise_duration"].append(None)
-        history["exercise_distance"].append(None)
-
-    # Clear and set up 4 subplots
+    # Clear and set up subplots
     fig.clf()
-    axs = fig.subplots(2, 2)
+    axs = fig.subplots(1, 2)
     axs = axs.flatten()
 
-    # 1. Stacked bar chart for diet
+    # 1. Line chart for heart_rate
     ax = axs[0]
-    diet_data = history["diet"]
-    foods = set()
-    for food_counts in diet_data.values():
-        foods.update(food_counts.keys())
-    foods = sorted(foods)
-    authors = sorted(diet_data.keys())
-    bottom = [0] * len(authors)
-    for food in foods:
-        values = [diet_data[author].get(food, 0) for author in authors]
-        ax.bar(authors, values, bottom=bottom, label=food)
-        bottom = [b + v for b, v in zip(bottom, values)]
-    ax.set_title("Diet (stacked bar)")
-    ax.set_ylabel("Count")
-    ax.legend(fontsize="small")
-
-    # 2. Line chart for heart_rate
-    ax = axs[1]
     ax.plot(history["heart_rate"], marker="o", color="red")
     ax.set_title("Heart Rate")
     ax.set_ylabel("BPM")
 
     # 3. Line chart for steps
-    ax = axs[2]
+    ax = axs[1]
     ax.plot(history["steps"], marker="o", color="blue")
     ax.set_title("Steps")
     ax.set_ylabel("Steps")
-
-    # 4. Line chart for exercise duration & distance
-    ax = axs[3]
-    ax.plot(history["exercise_duration"], label="Duration (min)", color="green")
-    ax.plot(history["exercise_distance"], label="Distance (km)", color="purple")
-    ax.set_title("Exercise")
-    ax.set_ylabel("Value")
-    ax.legend(fontsize="small")
 
     plt.tight_layout()
     plt.draw()
@@ -186,15 +141,19 @@ def process_message(message: str) -> None:
 
         # Ensure it's a dictionary before accessing fields
         if isinstance(message_dict, dict):
-            # Extract the 'author' field from the Python dictionary
-            author = message_dict.get("author", "unknown")
-            logger.info(f"Message received from author: {author}")
+            # Extract the 'type' field from the Python dictionary
+            message_type = message_dict.get("type", "unknown")
+            logger.info(f"Message received of type: {message_type}")
 
-            # Increment the count for the author
-            author_counts[author] += 1
+            # Filter down to only relevant message types for demo
+            if message_type != "heart_rate" and message_type != "steps":
+                return
+
+            # Store the latest message for chart updating
+            update_chart.latest_msg = message_dict
 
             # Log the updated counts
-            logger.info(f"Updated author counts: {dict(author_counts)}")
+            logger.info(f"Message sent to chart {dict(message_dict)}")
 
             # Update the chart
             update_chart()
